@@ -14,13 +14,17 @@ _OBJS = main.o debugger.o
 OBJS = $(patsubst %,$(OBJDIR)/%,$(_OBJS))
 
 
-$(OBJDIR)/%.o: %.c $(DEPS)
+$(OBJDIR)/%.o: %.c $(DEPS) | $(OBJDIR)
 	$(CC) -c -o $@ $< $(CFLAGS) 
 
 all: main
 
 main: $(OBJS)
 	$(CC) -o $@ $^ $(CFLAGS) $(LINKEXTRA)
+
+# here to create obj folder
+$(OBJDIR):
+	mkdir -p $@
 
 .PHONY: clean
 clean: 
