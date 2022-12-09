@@ -3,6 +3,7 @@
 debug_*
 main
 .idea
+.vscode
 # Object files
 *.o
 *.ko
