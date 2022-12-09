@@ -9,10 +9,10 @@ OBJDIR = obj
 
 NAME = main
 
-_DEPS = debugger.h
+_DEPS = debugger.h list.h
 DEPS = $(patsubst %,$(INCLDIR)/%,$(_DEPS))
 
-_OBJS = main.o debugger.o
+_OBJS = main.o debugger.o list.o
 OBJS = $(patsubst %,$(OBJDIR)/%,$(_OBJS))
 
 
