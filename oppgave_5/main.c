@@ -10,7 +10,6 @@
 
 void *TaskA(void *pvData);
 void *TaskB(void *pvData);
-pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 
 typedef struct _THREADOPTIONS {
     bool dataFlag;
@@ -53,18 +52,15 @@ void *TaskA(void *pvData) {
         usleep(1); // needs this for no dead lock
         if (options->dataFlag == false) {
             if (feof(f)) { // check if its end of file, if so set done flag and break
-                pthread_mutex_lock(&lock);
                 options->doneFlag = true;
-                pthread_mutex_unlock(&lock);
                 break;
             }
+
             memset(buff, 0, BUFFERSIZE);
             if (fgets(buff, BUFFERSIZE, f) != NULL) { // reads from pdf file and sets it to the sheared buffer
-                pthread_mutex_lock(&lock);
                 memset(options->Buffer, 0, BUFFERSIZE);
                 strcpy(options->Buffer, buff);
                 options->dataFlag = true; // sets the data flag to true
-                pthread_mutex_unlock(&lock);
             }
         }
     } while (true);
@@ -78,15 +74,15 @@ void *TaskB(void *pvData) {
     long array[256] = {0}; // local array to stor the amount of bytes
     int i = 0;
     do {
+        usleep(1); // needs this for no dead lock
         if (options->dataFlag == true) {
-            pthread_mutex_lock(&lock);
             for (i = 0; i < BUFFERSIZE; i++) { // read the bytes and add it to the array
-                array[(long)options->Buffer[i]] += 1;
+                char tempBuffer[2] = {options->Buffer[i], 0};
+                
+                array[strtol(tempBuffer, NULL, 16)]++;
             }
-
             memset(options->Buffer, 0, BUFFERSIZE);
             options->dataFlag = false; // sets the data flag to false
-            pthread_mutex_unlock(&lock);
         }
         if (options->doneFlag == true) { // check if task a is done
             break;

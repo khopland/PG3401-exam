@@ -44,7 +44,7 @@ int main(int argc, char *argv[]) {
     }
 
     // create file name for result file
-    char *ResultFile = (char *)malloc(strlen(targetName) + 13);
+    char *ResultFile = (char *)malloc(strlen(targetName) + 14);
     if (ResultFile == NULL) {
         error("failed to allocate memory for ResultFile");
         return 1;
@@ -76,6 +76,8 @@ int main(int argc, char *argv[]) {
     convertFile(fTarget, fResult);
 
     // clean up / close file readers.
+    free(ResultFile);
+    ResultFile = NULL;
     fclose(fTarget);
     fTarget = NULL;
     fclose(fResult);

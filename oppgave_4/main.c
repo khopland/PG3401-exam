@@ -27,6 +27,8 @@ int main(void) {
     printf("Is Success: %i\n", res->bIsSuccess);
     printf("server : %s\n", res->szServer);
     printf("ContentType : %s\n", res->szContentType);
+    free(res);
+    res = NULL;
     return 0;
 }
 MYHTTP *ProcessHttpHeader(char *pszHttp) {
