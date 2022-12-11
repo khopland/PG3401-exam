@@ -23,8 +23,11 @@ int main(void) {
     // read each char and print it as hex
     do {
         c = fgetc(fTarget);
+        if(feof(fTarget)) {
+            break;
+        }
         fprintf(fResult, "%02X", c);
-    } while (!feof(fTarget));
+    } while (1);
 
     // clean up / close file readers.
     fclose(fTarget);

@@ -18,7 +18,8 @@ MYHTTP *ProcessHttpHeader(char *pszHttp);
 
 int main(void) {
 
-    MYHTTP *res = ProcessHttpHeader("HTTP/1.1 200 OK \n Server: Apache \n Content-Type: text/json\n Content-Length: 155");
+    MYHTTP *res =
+        ProcessHttpHeader("HTTP/1.1 200 OK \n Server: Apache \n Content-Type: text/json\n Content-Length: 155");
 
     printf("http version: %.1f\n", res->fHttpVersion);
     printf("http code: %i\n", res->iHttpCode);
@@ -30,42 +31,49 @@ int main(void) {
 }
 MYHTTP *ProcessHttpHeader(char *pszHttp) {
     char *pszPtr;
-    MYHTTP *pHttp =
-        (MYHTTP *)malloc(sizeof(MYHTTP)); // allocates 8 bytes (pointer), not the 44 bytes as needed for the struct
+    MYHTTP *pHttp = (MYHTTP *)malloc(sizeof(MYHTTP));
     debug("length of pHttp: %i", sizeof(*pHttp));
-    if (!pHttp)
+    if (!pHttp) {
         return NULL;
-    memset(pHttp, 0, sizeof(MYHTTP)); // sets 44 bytes to 0, but pHttp is only 8 bytes long
+    }
+    memset(pHttp, 0, sizeof(MYHTTP));
 
-    pHttp->fHttpVersion = atof( pszHttp + strlen("HTTP/"));
+    // gets the http version
+    pHttp->fHttpVersion = atof(pszHttp + strlen("HTTP/"));
 
+    // gets the http code
     pHttp->iHttpCode = atoi(pszHttp + strlen("HTTP/1.x "));
     if (pHttp->iHttpCode == 200) {
         pHttp->bIsSuccess = true;
     }
+
+    // get the server name
     pszPtr = strstr(pszHttp, "Server");
     if (pszPtr) {
         pszPtr += 6;
         while (!isalpha(pszPtr[0]))
             pszPtr++;
         int len = strcspn(pszPtr, "\n");
-        if (len >15)
+        if (len > 15)
             len = 15;
-        
-        strncpy(pHttp->szServer, pszPtr, len); // pHttp->szServer is not allocated correctly
+
+        strncpy(pHttp->szServer, pszPtr, len);
     }
 
-    pszPtr = strstr(pszHttp, "Content-Type"); 
+    // get the content type
+    pszPtr = strstr(pszHttp, "Content-Type");
     if (pszPtr) {
         pszPtr += 12;
         while (!isalpha(pszPtr[0]))
             pszPtr++;
         int len = strcspn(pszPtr, "\n");
-        if (len >15)
+        if (len > 15)
             len = 15;
-        
-        strncpy(pHttp->szContentType, pszPtr,len); // pHttp->szContentType is not allocated correctly
+
+        strncpy(pHttp->szContentType, pszPtr, len);
     }
+
+    // get the content length
     pszPtr = strstr(pszHttp, "Content-Length");
     if (pszPtr) {
         pszPtr += 14;
@@ -73,5 +81,6 @@ MYHTTP *ProcessHttpHeader(char *pszHttp) {
             pszPtr++;
         pHttp->iContentLength = '0' + atoi(pszPtr);
     }
+
     return pHttp;
 }
