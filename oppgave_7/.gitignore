@@ -4,6 +4,8 @@ debug_*
 main
 .idea
 .vscode
+*_beautified.c
+
 # Object files
 *.o
 *.ko
