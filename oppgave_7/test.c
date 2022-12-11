@@ -1,15 +1,15 @@
 int main(void) {
-    int i;
+	int i;
 	// this is a for loop
-    for (i = 0; i < 10; i++) {
-        printf("Hello World");
-    }
+	for (i = 0; i < 10; i++) {
+		printf("Hello World");
+	}
 	// this is a for loop with no scoped body
-    for (i = 0; i < 10; i++) 
+	for (i = 0; i < 10; i++) 
 	printf("Hello World");
 	
 	// this is a for loop with no body
-    for (i = 0; i < 10; i++);
+	for (i = 0; i < 10; i++);
 
 	
 	printf("Hello World");
