@@ -14,6 +14,7 @@ void *TaskB(void *pvData);
 typedef struct _THREADOPTIONS {
     bool dataFlag;
     bool doneFlag;
+    bool errorFlag;
     char Buffer[BUFFERSIZE];
 } THREADOPTIONS;
 
@@ -47,6 +48,11 @@ void *TaskA(void *pvData) {
     FILE *f = NULL;
 
     f = fopen(fileName, "r");
+    if(f == NULL) {
+        error("failed to open file");
+        options->errorFlag= true;
+        return NULL;
+    }
 
     do {
         usleep(1); // needs this for no dead lock
@@ -59,7 +65,7 @@ void *TaskA(void *pvData) {
             memset(buff, 0, BUFFERSIZE);
             if (fgets(buff, BUFFERSIZE, f) != NULL) { // reads from pdf file and sets it to the sheared buffer
                 memset(options->Buffer, 0, BUFFERSIZE);
-                strcpy(options->Buffer, buff);
+                memcpy(options->Buffer, buff, BUFFERSIZE);
                 options->dataFlag = true; // sets the data flag to true
             }
         }
@@ -73,13 +79,18 @@ void *TaskB(void *pvData) {
     THREADOPTIONS *options = (THREADOPTIONS *)pvData;
     long array[256] = {0}; // local array to stor the amount of bytes
     int i = 0;
+    int len = 0;
+
     do {
         usleep(1); // needs this for no dead lock
+        if(options->errorFlag == true) {
+            return NULL;
+        }
+
         if (options->dataFlag == true) {
-            for (i = 0; i < BUFFERSIZE; i++) { // read the bytes and add it to the array
-                char tempBuffer[2] = {options->Buffer[i], 0};
-                
-                array[strtol(tempBuffer, NULL, 16)]++;
+             len = strlen(options->Buffer);
+            for (i = 0; i < len; i++) { // read the bytes and add it to the array
+                array[(unsigned char) options->Buffer[i]]++;
             }
             memset(options->Buffer, 0, BUFFERSIZE);
             options->dataFlag = false; // sets the data flag to false
@@ -88,6 +99,7 @@ void *TaskB(void *pvData) {
             break;
         }
     } while (true);
+
     for (i = 0; i < 256; i++) { // print the data
         printf("%02X has %li\n", i, array[i]);
     }

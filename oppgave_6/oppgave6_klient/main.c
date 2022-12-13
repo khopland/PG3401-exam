@@ -7,8 +7,6 @@
 #include <time.h>
 #include <unistd.h>
 
-int GetArgs(int *port, int argc, char *argv[]);
-
 int main(int argc, char *argv[]) {
 
     int iSocket;
@@ -18,6 +16,7 @@ int main(int argc, char *argv[]) {
     int port = 8080;
     
     if (argc != 2) {
+        printf("Usage: %s <filename>\n", argv[0]);
         return 1;
     }
     char * filename = argv[1];

@@ -9,7 +9,7 @@ OBJDIR = obj
 
 NAME = main
 
-_DEPS = debugger.h
+_DEPS = debugger.h http.h
 DEPS = $(patsubst %,$(INCLDIR)/%,$(_DEPS))
 
 _OBJS = $(NAME).o $(addsuffix .o,$(basename $(_DEPS)))
