@@ -5,6 +5,14 @@ int main(void) {
 	for (i = 0; i < 10; i++) {
 		printf("Hello World");
 	}
+	// for loop wit \n between for and (
+	for 
+
+	
+	(i = 0; i < 10; i++) {
+		printf("Hello World");
+	}
+
 	// this is a for loop with no scoped body
 	for (i = 0; i < 10; i++) 
 	printf("Hello World");

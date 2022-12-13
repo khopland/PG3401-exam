@@ -1,7 +1,8 @@
 #include "debugger.h"
 #include <stdio.h>
 
-void checkForFor(char c, FILE *fTarget, FILE *fResult);
+void ConvertForLoopToWhileLoop(char c, FILE *fTarget, FILE *fResult);
+int checkForForLoop(char c, FILE *fTarget, FILE *fResult);
 char whiteSpaceCleanUp(FILE *fTarget, FILE *fResult);
 char proxyFgetc(FILE *fTarget, FILE *fResult);
 
@@ -15,7 +16,7 @@ void convertFile(FILE *fTarget, FILE *fResult) {
 
         // need to add the for loops change here
         if (c == 'f') {
-            checkForFor(c, fTarget, fResult);
+            ConvertForLoopToWhileLoop(c, fTarget, fResult);
             continue;
         }
 
@@ -23,33 +24,41 @@ void convertFile(FILE *fTarget, FILE *fResult) {
     } while (1);
 }
 
-// this function will check for "for loops" and change them to "while loops".
-void checkForFor(char c, FILE *fTarget, FILE *fResult) {
-    int indent = 0;
-    char incrementor[100];
+int checkForForLoop(char c, FILE *fTarget, FILE *fResult) {
 
-    // checks if the next 3 characters are "for".
     if (c != 'f') {
         fprintf(fResult, "%c", c);
-        return;
+        return 1;
     }
 
     c = proxyFgetc(fTarget, fResult);
     if (c != 'o') {
         fprintf(fResult, "f%c", c);
-        return;
+        return 1;
     }
 
     c = proxyFgetc(fTarget, fResult);
     if (c != 'r') {
         fprintf(fResult, "fo%c", c);
-        return;
+        return 1;
     }
 
     c = whiteSpaceCleanUp(fTarget, fResult);
 
     if (c != '(') {
         fprintf(fResult, "for%c", c);
+        return 1;
+    }
+    return 0;
+}
+
+// this function will check for "for loops" and change them to "while loops".
+void ConvertForLoopToWhileLoop(char c, FILE *fTarget, FILE *fResult) {
+    int indent = 0;
+    char incrementor[100];
+
+    // checks if the next 3 characters are "for".
+    if (checkForForLoop(c, fTarget, fResult)) {
         return;
     }
 
@@ -142,7 +151,7 @@ void checkForFor(char c, FILE *fTarget, FILE *fResult) {
 char whiteSpaceCleanUp(FILE *fTarget, FILE *fResult) {
     char c;
     c = proxyFgetc(fTarget, fResult);
-    while (c == ' ') {
+    while (c == ' ' || c == '\n' || c == '\r' || c == '\t') {
         c = proxyFgetc(fTarget, fResult);
     }
     return c;

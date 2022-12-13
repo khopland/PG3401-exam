@@ -8,15 +8,17 @@
 
 #define BUFFERSIZE 4096
 
-void *TaskA(void *pvData);
-void *TaskB(void *pvData);
+#pragma pack(1)
+enum flagState { NODATA, DATA, DONE, ERROR };
 
 typedef struct _THREADOPTIONS {
-    bool dataFlag;
-    bool doneFlag;
-    bool errorFlag;
+    enum flagState flag;
     char Buffer[BUFFERSIZE];
 } THREADOPTIONS;
+#pragma pack()
+
+void *TaskA(void *pvData);
+void *TaskB(void *pvData);
 
 int main(void) {
     pthread_t pThreadA, pThreadB;
@@ -40,6 +42,7 @@ int main(void) {
 
     return 0;
 }
+
 // task for thread A
 void *TaskA(void *pvData) {
     char *fileName = "PG3401-Hjemmeeksamen-14dager-H22.pdf";
@@ -48,17 +51,17 @@ void *TaskA(void *pvData) {
     FILE *f = NULL;
 
     f = fopen(fileName, "r");
-    if(f == NULL) {
+    if (f == NULL) {
         error("failed to open file");
-        options->errorFlag= true;
+        options->flag = ERROR;
         return NULL;
     }
 
     do {
         usleep(1); // needs this for no dead lock
-        if (options->dataFlag == false) {
+        if (options->flag == NODATA) {
             if (feof(f)) { // check if its end of file, if so set done flag and break
-                options->doneFlag = true;
+                options->flag = DONE;
                 break;
             }
 
@@ -66,7 +69,7 @@ void *TaskA(void *pvData) {
             if (fgets(buff, BUFFERSIZE, f) != NULL) { // reads from pdf file and sets it to the sheared buffer
                 memset(options->Buffer, 0, BUFFERSIZE);
                 memcpy(options->Buffer, buff, BUFFERSIZE);
-                options->dataFlag = true; // sets the data flag to true
+                options->flag = DATA; // sets the data flag to true
             }
         }
     } while (true);
@@ -83,19 +86,19 @@ void *TaskB(void *pvData) {
 
     do {
         usleep(1); // needs this for no dead lock
-        if(options->errorFlag == true) {
+        if (options->flag == ERROR) {
             return NULL;
         }
 
-        if (options->dataFlag == true) {
-             len = strlen(options->Buffer);
+        if (options->flag == DATA) {
+            len = strlen(options->Buffer);
             for (i = 0; i < len; i++) { // read the bytes and add it to the array
-                array[(unsigned char) options->Buffer[i]]++;
+                array[(unsigned char)options->Buffer[i]]++;
             }
             memset(options->Buffer, 0, BUFFERSIZE);
-            options->dataFlag = false; // sets the data flag to false
+            options->flag = NODATA; // sets the data flag to false
         }
-        if (options->doneFlag == true) { // check if task a is done
+        if (options->flag == DONE) { // check if task a is done
             break;
         }
     } while (true);
