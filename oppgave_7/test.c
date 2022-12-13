@@ -1,3 +1,4 @@
+#include <stdio.h>
 int main(void) {
 	int i;
 	// this is a for loop

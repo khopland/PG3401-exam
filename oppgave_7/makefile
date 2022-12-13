@@ -12,7 +12,7 @@ NAME = main
 _DEPS = debugger.h fileConverter.h
 DEPS = $(patsubst %,$(INCLDIR)/%,$(_DEPS))
 
-_OBJS = main.o debugger.o fileConverter.o
+_OBJS = $(NAME).o $(addsuffix .o,$(basename $(_DEPS)))
 OBJS = $(patsubst %,$(OBJDIR)/%,$(_OBJS))
 
 
@@ -29,4 +29,4 @@ $(OBJDIR):
 
 .PHONY: clean
 clean: 
-	rm -f $(OBJDIR)/*.o *~ core $(INCLDIR)/*~ *.a debug_*.txt $(NAME)
+	rm -f $(OBJDIR)/*.o *~ core $(INCLDIR)/*~ *.a debug_*.txt $(NAME) *_beautified.c

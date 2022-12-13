@@ -12,7 +12,7 @@ NAME = main
 _DEPS = debugger.h list.h
 DEPS = $(patsubst %,$(INCLDIR)/%,$(_DEPS))
 
-_OBJS = main.o debugger.o list.o
+_OBJS = $(NAME).o $(addsuffix .o,$(basename $(_DEPS))) list.o
 OBJS = $(patsubst %,$(OBJDIR)/%,$(_OBJS))
 
 
