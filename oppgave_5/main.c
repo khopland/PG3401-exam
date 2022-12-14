@@ -13,7 +13,8 @@ enum flagState { NODATA, DATA, DONE, ERROR };
 
 typedef struct _THREADOPTIONS {
     enum flagState flag;
-    char Buffer[BUFFERSIZE];
+    int length;
+    unsigned char Buffer[BUFFERSIZE];
 } THREADOPTIONS;
 #pragma pack()
 
@@ -47,10 +48,11 @@ int main(void) {
 void *TaskA(void *pvData) {
     char *fileName = "PG3401-Hjemmeeksamen-14dager-H22.pdf";
     THREADOPTIONS *options = (THREADOPTIONS *)pvData;
-    char buff[BUFFERSIZE] = {0};
+    unsigned char buff[BUFFERSIZE] = {0};
     FILE *f = NULL;
+    int len = 0;
 
-    f = fopen(fileName, "r");
+    f = fopen(fileName, "rb");
     if (f == NULL) {
         error("failed to open file");
         options->flag = ERROR;
@@ -60,19 +62,25 @@ void *TaskA(void *pvData) {
     do {
         usleep(1); // needs this for no dead lock
         if (options->flag == NODATA) {
-            if (feof(f)) { // check if its end of file, if so set done flag and break
+            // reset the buffer and length
+            memset(buff, 0, BUFFERSIZE);
+            options->length = 0; 
+
+            len = fread(buff, sizeof(char), BUFFERSIZE, f); // reads from pdf file and sets it to the sheared buffer
+            if (len > 0) {
+                
+                memset(options->Buffer, 0, BUFFERSIZE);
+                memcpy(options->Buffer, buff, BUFFERSIZE);
+
+                options->flag = DATA; // sets the data flag to true
+                options->length = len;
+            }
+            if (len == 0) { // check if the file is done
                 options->flag = DONE;
                 break;
             }
-
-            memset(buff, 0, BUFFERSIZE);
-            if (fgets(buff, BUFFERSIZE, f) != NULL) { // reads from pdf file and sets it to the sheared buffer
-                memset(options->Buffer, 0, BUFFERSIZE);
-                memcpy(options->Buffer, buff, BUFFERSIZE);
-                options->flag = DATA; // sets the data flag to true
-            }
         }
-    } while (true);
+    } while (options->flag != DONE);
 
     fclose(f); // close file
     return NULL;
@@ -82,7 +90,6 @@ void *TaskB(void *pvData) {
     THREADOPTIONS *options = (THREADOPTIONS *)pvData;
     long array[256] = {0}; // local array to stor the amount of bytes
     int i = 0;
-    int len = 0;
 
     do {
         usleep(1); // needs this for no dead lock
@@ -90,13 +97,13 @@ void *TaskB(void *pvData) {
             return NULL;
         }
 
-        if (options->flag == DATA) {
-            len = strlen(options->Buffer);
-            for (i = 0; i < len; i++) { // read the bytes and add it to the array
+        if (options->flag == DATA) { // check if task a has data
+            for (i = 0; i < options->length ; i++) { // read the bytes and add it to the array
                 array[(unsigned char)options->Buffer[i]]++;
             }
             memset(options->Buffer, 0, BUFFERSIZE);
             options->flag = NODATA; // sets the data flag to false
+            options->length = 0; // reset the length
         }
         if (options->flag == DONE) { // check if task a is done
             break;
