@@ -120,6 +120,9 @@ void ConvertForLoopToWhileLoop(char c, FILE *fTarget, FILE *fResult) {
             } else if (c == '{') {
                 indent++;
                 fprintf(fResult, "{");
+            } else if (c == 'f') {
+                // handle for loops inside for loops.
+                ConvertForLoopToWhileLoop(c, fTarget, fResult);
             } else {
                 fputc(c, fResult);
             }
@@ -138,9 +141,12 @@ void ConvertForLoopToWhileLoop(char c, FILE *fTarget, FILE *fResult) {
 
     // handle for loops with body but no curly braces. and adds the incrementor to the end of the while loop.
     fprintf(fResult, " {\n");
-    c = proxyFgetc(fTarget, fResult);
     while (c != ';') {
-        fputc(c, fResult);
+        if (c == 'f') {
+            ConvertForLoopToWhileLoop(c, fTarget, fResult);
+        } else {
+            fputc(c, fResult);
+        }
         c = proxyFgetc(fTarget, fResult);
     }
     fprintf(fResult, ";\n%s;\n}", incrementor);

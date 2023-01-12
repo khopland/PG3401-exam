@@ -2,6 +2,8 @@
 *.d
 debug_*
 main
+test
+test_beautified
 .idea
 .vscode
 # Object files
